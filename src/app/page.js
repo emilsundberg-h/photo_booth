@@ -111,7 +111,9 @@ export default function Home() {
 
     // Ta bort bilden från servern
     try {
-      await axios.delete(`/api/delete/${lastPhoto.fileName}`);
+      // URL encode fileName to handle paths with forward slashes
+      const encodedFileName = encodeURIComponent(lastPhoto.fileName);
+      await axios.delete(`/api/delete/${encodedFileName}`);
       console.log('Deleted file:', lastPhoto.fileName);
     } catch (error) {
       console.error('Fel vid radering av bild:', error);
@@ -171,116 +173,132 @@ export default function Home() {
       </SignedOut>
       
       <SignedIn>
-        <div className="text-center relative min-h-screen" style={{ backgroundColor: backgroundColor }}>
-          {/* User Button for Sign Out */}
-          <div className="absolute top-2.5 right-2.5">
-            <UserButton afterSignOutUrl="/" />
-          </div>
-      <input
-        type="text"
-        value={greetingText}
-        onChange={(e) => setGreetingText(e.target.value)}
-        className="my-2.5 text-2xl text-center w-full border-none bg-transparent outline-none"
-        style={{ color: greetingTextColor }}
-      />
-      {isCameraVisible ? (
-        <Camera setImageURL={setImageURL} setQrVisible={setQrVisible} photos={photos} setPhotos={setPhotos} shutterColor={shutterColor} showShutterIcon={showShutterIcon} />
-      ) : (
-        <div className="relative inline-block">
-          <img src={imageURL} alt="Tagen bild" className="w-full max-w-[600px]" />
-          {qrVisible && qrCodeDataURL && (
-            <div className="mt-5">
-              <img src={qrCodeDataURL} alt="QR Code" className="mx-auto" />
-              <p className="font-semibold mt-2.5" style={{ color: contrastColor }}>Scana QR-koden för att få bilden till din mobil</p>
+        <div className="min-h-screen flex flex-col" style={{ backgroundColor: backgroundColor }}>
+          {/* Header */}
+          <div className="flex justify-between items-center p-4 md:p-6">
+            <div className="flex-1"></div>
+            <input
+              type="text"
+              value={greetingText}
+              onChange={(e) => setGreetingText(e.target.value)}
+              className="text-lg md:text-2xl text-center bg-transparent border-none outline-none max-w-xs md:max-w-md"
+              style={{ color: greetingTextColor }}
+            />
+            <div className="flex-1 flex justify-end">
+              <UserButton afterSignOutUrl="/" />
             </div>
-          )}
-          <div className="mb-2.5">
+          </div>
+
+          {/* Main Content */}
+          <div className="flex-1 flex items-center justify-center px-4">
+              {isCameraVisible ? (
+                <Camera setImageURL={setImageURL} setQrVisible={setQrVisible} photos={photos} setPhotos={setPhotos} shutterColor={shutterColor} showShutterIcon={showShutterIcon} />
+              ) : (
+                <div className="text-center max-w-md mx-auto">
+                  <img src={imageURL} alt="Tagen bild" className="w-full rounded-lg shadow-lg mb-4" />
+                  {qrVisible && qrCodeDataURL && (
+                    <div className="mb-4">
+                      <img src={qrCodeDataURL} alt="QR Code" className="mx-auto mb-2" />
+                      <p className="font-semibold text-sm md:text-base" style={{ color: contrastColor }}>
+                        Scana QR-koden för att få bilden till din mobil
+                      </p>
+                    </div>
+                  )}
+                  <button
+                    onClick={deleteLastImage}
+                    className="mb-4 h-10 px-4 border-none rounded font-semibold text-sm hover:opacity-90 transition-opacity"
+                    style={{
+                      backgroundColor: deleteButtonColor,
+                      color: contrastColorDeletebutton
+                    }}
+                  >
+                    Radera bilden
+                  </button>
+                  <div className="text-sm md:text-base" style={{ color: contrastColor }}>
+                    Återgår till kameran om {countdown} sekunder
+                  </div>
+                </div>
+              )}
+            </div>
+
+          {/* Settings Button */}
+          <div className="absolute bottom-4 right-4">
             <button
-              onClick={deleteLastImage}
-              className="mt-5 h-9 w-[108px] border-none rounded font-semibold"
+              onClick={() => setShowSettings(!showSettings)}
+              className="rounded px-4 py-2 text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity"
               style={{
-                backgroundColor: deleteButtonColor,
-                color: contrastColorDeletebutton
+                backgroundColor: backgroundColor,
+                color: contrastColor,
+                border: `1px solid ${contrastColor}`
               }}
             >
-              Radera bilden
+              Settings
             </button>
           </div>
-          <div className="mt-2.5 text-lg mb-7" style={{ color: contrastColor }}>
-            Återgår till kameran om {countdown} sekunder
-          </div>
-        </div>
-      )}
-      <button
-        onClick={() => setShowSettings(!showSettings)}
-        className="absolute bottom-2.5 right-2.5 rounded px-5 py-2.5 cursor-pointer"
-        style={{
-          backgroundColor: backgroundColor,
-          color: contrastColor,
-          border: `1px solid ${contrastColor}`
-        }}
-      >
-        Settings
-      </button>
-      {showSettings && (
-        <div className="absolute bottom-15 right-2.5 bg-white p-2.5 rounded shadow-lg flex flex-col items-end">
-          <div className="my-2.5">
-            <label>
-              Background:
-              <input
-                type="color"
-                value={backgroundColor}
-                onChange={(e) => setBackgroundColor(e.target.value)}
-                className="ml-2.5"
-              />
-            </label>
-          </div>
-          <div className="my-2.5">
-            <label>
-              Shutter:
-              <input
-                type="color"
-                value={shutterColor}
-                onChange={(e) => setShutterColor(e.target.value)}
-                className="ml-2.5"
-              />
-            </label>
-          </div>
-          <div className="my-2.5">
-            <label>
-              Delete button:
-              <input
-                type="color"
-                value={deleteButtonColor}
-                onChange={(e) => setDeleteButtonColor(e.target.value)}
-                className="ml-2.5"
-              />
-            </label>
-          </div>
-          <div className="my-2.5">
-            <label>
-              Heading:
-              <input
-                type="color"
-                value={greetingTextColor}
-                onChange={(e) => setGreetingTextColor(e.target.value)}
-                className="ml-2.5"
-              />
-            </label>
-          </div>
-          <div className="my-2.5">
-            <label>
-              Show 📸-icon:
-              <input
-                type="checkbox"
-                checked={showShutterIcon}
-                onChange={(e) => setShowShutterIcon(e.target.checked)}
-                className="ml-2.5"
-              />
-            </label>
-          </div>
-        </div>
-      )}
+          {/* Settings Panel */}
+          {showSettings && (
+            <div className="absolute bottom-16 right-4 bg-white p-4 rounded-lg shadow-xl border min-w-64 md:min-w-72">
+              <h3 className="text-lg font-semibold mb-4 text-gray-800">Settings</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Background Color:
+                  </label>
+                  <input
+                    type="color"
+                    value={backgroundColor}
+                    onChange={(e) => setBackgroundColor(e.target.value)}
+                    className="w-full h-10 rounded border"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Shutter Button:
+                  </label>
+                  <input
+                    type="color"
+                    value={shutterColor}
+                    onChange={(e) => setShutterColor(e.target.value)}
+                    className="w-full h-10 rounded border"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Delete Button:
+                  </label>
+                  <input
+                    type="color"
+                    value={deleteButtonColor}
+                    onChange={(e) => setDeleteButtonColor(e.target.value)}
+                    className="w-full h-10 rounded border"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Text Color:
+                  </label>
+                  <input
+                    type="color"
+                    value={greetingTextColor}
+                    onChange={(e) => setGreetingTextColor(e.target.value)}
+                    className="w-full h-10 rounded border"
+                  />
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="showIcon"
+                    checked={showShutterIcon}
+                    onChange={(e) => setShowShutterIcon(e.target.checked)}
+                    className="mr-2"
+                  />
+                  <label htmlFor="showIcon" className="text-sm font-medium text-gray-700">
+                    Show 📸 icon on button
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </SignedIn>
     </>

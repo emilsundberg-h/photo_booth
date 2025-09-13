@@ -31,7 +31,9 @@ export default function Admin() {
   // Funktion för att radera en bild
   const deleteImage = async (fileName) => {
     try {
-      await axios.delete(`/api/delete/${fileName}`);
+      // URL encode fileName to handle paths with forward slashes
+      const encodedFileName = encodeURIComponent(fileName);
+      await axios.delete(`/api/delete/${encodedFileName}`);
       console.log('Deleted file:', fileName);
       setPhotos(photos.filter(photo => photo.fileName !== fileName));
     } catch (error) {
@@ -87,80 +89,101 @@ export default function Admin() {
       </SignedOut>
       
       <SignedIn>
-        <div className="text-center relative">
-          {/* User Button for Sign Out */}
-          <div className="absolute top-2.5 right-2.5">
-            <UserButton afterSignOutUrl="/" />
+        <div className="min-h-screen bg-gray-50 py-4">
+          {/* Header */}
+          <div className="relative max-w-7xl mx-auto px-4">
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-800">📸 Photo Booth Admin</h1>
+              <UserButton afterSignOutUrl="/" />
+            </div>
           </div>
-          
-          <h1>Admin - All amazing pics</h1>
 
-      {loading ? (
-        <p>Loading pics...</p> // Laddningsindikator
-      ) : (
-        <>
-          <div className="mb-2.5">
-            <input
-              type="checkbox"
-              checked={selectedPhotos.length === photos.length}
-              onChange={handleSelectAll}
-            />
-            <label className="ml-1.5">Select all</label>
-          </div>
-          <div className="flex flex-wrap justify-center">
+          {/* Content */}
+          <div className="max-w-7xl mx-auto px-4">
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <p className="text-lg text-gray-600">Loading photos...</p>
+              </div>
+            ) : (
+              <>
+                <div className="mb-6">
+                  <label className="inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedPhotos.length === photos.length && photos.length > 0}
+                      onChange={handleSelectAll}
+                      className="form-checkbox h-4 w-4 text-blue-600"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Select all ({photos.length} photos)</span>
+                  </label>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4">
             {photos.length > 0 ? (
               photos.map((photo, index) => (
-                <div key={index} className="m-2.5 text-center">
+                <div key={index} className="text-center">
                   {/* Rendera endast bilder som har en riktig URL */}
                   {photo.url && (
-                    <>
+                    <div className="bg-white rounded-lg shadow-md overflow-hidden">
                       <div
                         onClick={() => handleSelectPhoto(photo.fileName)}
-                        className="border-2 inline-block cursor-pointer w-[150px] h-[150px] box-border"
+                        className="relative cursor-pointer aspect-square overflow-hidden border-2 hover:border-blue-400 transition-all"
                         style={{
-                          borderColor: selectedPhotos.includes(photo.fileName) ? 'blue' : 'white',
+                          borderColor: selectedPhotos.includes(photo.fileName) ? '#3b82f6' : '#e5e7eb',
                         }}
                       >
-                        <img src={photo.url} alt="Tagen bild" className="w-full h-full object-cover" />
+                        <img 
+                          src={photo.url} 
+                          alt="Tagen bild" 
+                          className="w-full h-full object-cover hover:scale-105 transition-transform" 
+                        />
+                        {selectedPhotos.includes(photo.fileName) && (
+                          <div className="absolute inset-0 bg-blue-500 bg-opacity-30 flex items-center justify-center">
+                            <span className="text-white text-2xl">✓</span>
+                          </div>
+                        )}
                       </div>
-                      <a href={photo.url} download={`photo-${index}.jpg`} className="block mt-2.5">
-                        Download
-                      </a>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteImage(photo.fileName);
-                        }}
-                        className="mt-2.5 bg-red-500 text-white border-none rounded px-2.5 py-1.5 cursor-pointer hover:bg-red-600 transition-colors"
-                      >
-                        Delete
-                      </button>
-                    </>
+                      <div className="p-2 space-y-1">
+                        <a 
+                          href={photo.url} 
+                          download={`photo-${index}.jpg`} 
+                          className="text-xs text-blue-600 hover:text-blue-800 block underline"
+                        >
+                          Download
+                        </a>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteImage(photo.fileName);
+                          }}
+                          className="text-xs bg-red-500 text-white border-none rounded px-2 py-1 cursor-pointer hover:bg-red-600 transition-colors w-full"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </div>
               ))
-            ) : (
-              <p>No picures found.</p> // Om inga bilder finns
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-lg text-gray-500">No pictures found.</p>
+                    <p className="text-sm text-gray-400 mt-2">Take some photos to see them here!</p>
+                  </div>
+                )}
+                </div>
+                {selectedPhotos.length > 0 && (
+                  <div className="mt-6 text-center">
+                    <button
+                      onClick={deleteSelectedPhotos}
+                      className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition-colors font-medium"
+                    >
+                      Delete selected ({selectedPhotos.length})
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
-          {selectedPhotos.length > 0 && (
-            <button
-              onClick={deleteSelectedPhotos}
-              style={{
-                marginTop: '20px',
-                backgroundColor: '#ff0000',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: '5px',
-                padding: '10px 20px',
-                cursor: 'pointer',
-              }}
-            >
-              Delete selected pictures
-            </button>
-          )}
-        </>
-      )}
         </div>
       </SignedIn>
     </>
