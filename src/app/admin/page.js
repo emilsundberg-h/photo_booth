@@ -7,31 +7,28 @@ import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
 
 export default function Admin() {
   const [photos, setPhotos] = useState([]);
-  const [loading, setLoading] = useState(true); // För att hantera laddningstillstånd
-  const [selectedPhotos, setSelectedPhotos] = useState([]); // För att hantera valda bilder
+  const [loading, setLoading] = useState(true);
+  const [selectedPhotos, setSelectedPhotos] = useState([]);
 
-  // Hämta alla bilder från servern
   useEffect(() => {
     const fetchPhotos = async () => {
       try {
-        setLoading(true); // Starta laddning
+        setLoading(true);
         console.log('Startar hämtning av bilder från servern...');
         const response = await axios.get('/api/photos');
         setPhotos(response.data);
       } catch (error) {
         console.error('Fel vid hämtning av bilder:', error);
       } finally {
-        setLoading(false); // Avsluta laddning
+        setLoading(false);
       }
     };
 
     fetchPhotos();
   }, []);
 
-  // Funktion för att radera en bild
   const deleteImage = async (fileName) => {
     try {
-      // URL encode fileName to handle paths with forward slashes
       const encodedFileName = encodeURIComponent(fileName);
       await axios.delete(`/api/delete/${encodedFileName}`);
       console.log('Deleted file:', fileName);
@@ -41,7 +38,6 @@ export default function Admin() {
     }
   };
 
-  // Funktion för att hantera val av bilder
   const handleSelectPhoto = (fileName) => {
     setSelectedPhotos(prevSelected =>
       prevSelected.includes(fileName)
@@ -50,7 +46,6 @@ export default function Admin() {
     );
   };
 
-  // Funktion för att hantera val av alla bilder
   const handleSelectAll = () => {
     if (selectedPhotos.length === photos.length) {
       setSelectedPhotos([]);
@@ -59,7 +54,6 @@ export default function Admin() {
     }
   };
 
-  // Funktion för att radera valda bilder
   const deleteSelectedPhotos = async () => {
     try {
       await Promise.all(selectedPhotos.map(fileName => axios.delete(`/api/delete/${fileName}`)));
@@ -90,7 +84,6 @@ export default function Admin() {
       
       <SignedIn>
         <div className="min-h-screen bg-gray-50 py-4">
-          {/* Header */}
           <div className="relative max-w-7xl mx-auto px-4">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-800">📸 Photo Booth Admin</h1>
@@ -98,7 +91,6 @@ export default function Admin() {
             </div>
           </div>
 
-          {/* Content */}
           <div className="max-w-7xl mx-auto px-4">
             {loading ? (
               <div className="flex items-center justify-center h-64">
@@ -121,7 +113,6 @@ export default function Admin() {
             {photos.length > 0 ? (
               photos.map((photo, index) => (
                 <div key={index} className="text-center">
-                  {/* Rendera endast bilder som har en riktig URL */}
                   {photo.url && (
                     <div className="bg-white rounded-lg shadow-md overflow-hidden">
                       <div

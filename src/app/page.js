@@ -3,45 +3,39 @@
 import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import Camera from './Camera';
-import axios from 'axios'; // Import axios
+import axios from 'axios';
 import Head from 'next/head';
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
 
-// Utility function to calculate contrast color
 const getContrastColor = (hexColor) => {
-  // Remove the hash at the start if it's there
   hexColor = hexColor.replace(/^#/, '');
 
-  // Parse the r, g, b values
   const r = parseInt(hexColor.substr(0, 2), 16);
   const g = parseInt(hexColor.substr(2, 2), 16);
   const b = parseInt(hexColor.substr(4, 2), 16);
 
-  // Calculate the brightness (YIQ formula)
   const brightness = (r * 299 + g * 587 + b * 114) / 1000;
 
-  // Return black or white depending on the brightness
   return brightness > 128 ? 'black' : 'white';
 };
 
 export default function Home() {
-  const [imageURL, setImageURL] = useState(null); // URL för senaste bild
+  const [imageURL, setImageURL] = useState(null);
   const [qrVisible, setQrVisible] = useState(false);
-  const [photos, setPhotos] = useState([]); // Alla sparade bilder
-  const [isCameraVisible, setIsCameraVisible] = useState(true); // Hantera kamera vs bild
-  const [countdown, setCountdown] = useState(20); // Nedräkning i sekunder
-  const [downloadTimeout, setDownloadTimeout] = useState(null); // Timeout för nedladdning
-  const [greetingText, setGreetingText] = useState('Super Pro Photo Booth 🎭🎉✨🥂'); // Lägg till state för texten
-  const [backgroundColor, setBackgroundColor] = useState('#ffffff'); // State för bakgrundsfärg
-  const [shutterColor, setShutterColor] = useState('#0000ff'); // State för avtryckarfärg
-  const [deleteButtonColor, setDeleteButtonColor] = useState('#ff0000'); // State för raderaknappsfärg
-  const [greetingTextColor, setGreetingTextColor] = useState('#000000'); // State för textfärg
-  const [deleteButtonTextColor, setDeleteButtonTextColor] = useState('#ffffff'); // State för raderaknappens textfärg
-  const [showShutterIcon, setShowShutterIcon] = useState(true); // State för att visa eller dölja 📸-ikonen
-  const [showSettings, setShowSettings] = useState(false); // State för att visa eller dölja inställningar
-  const [qrCodeDataURL, setQrCodeDataURL] = useState(''); // State för QR-kod data URL
+  const [photos, setPhotos] = useState([]);
+  const [isCameraVisible, setIsCameraVisible] = useState(true);
+  const [countdown, setCountdown] = useState(20);
+  const [downloadTimeout, setDownloadTimeout] = useState(null);
+  const [greetingText, setGreetingText] = useState('Super Pro Photo Booth 🎭🎉✨🥂');
+  const [backgroundColor, setBackgroundColor] = useState('#ffffff');
+  const [shutterColor, setShutterColor] = useState('#0000ff');
+  const [deleteButtonColor, setDeleteButtonColor] = useState('#ff0000');
+  const [greetingTextColor, setGreetingTextColor] = useState('#000000');
+  const [deleteButtonTextColor, setDeleteButtonTextColor] = useState('#ffffff');
+  const [showShutterIcon, setShowShutterIcon] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
+  const [qrCodeDataURL, setQrCodeDataURL] = useState('');
 
-  // Hämta alla bilder från servern och visa dem
   useEffect(() => {
     const fetchPhotos = async () => {
       try {
@@ -56,7 +50,6 @@ export default function Home() {
     fetchPhotos();
   }, []);
 
-  // Visa bilden i 10 sekunder efter att den har tagits
   useEffect(() => {
     if (imageURL) {
       setIsCameraVisible(false);
@@ -73,7 +66,6 @@ export default function Home() {
         }
       }, 1000);
 
-      // Sätt timeout för nedladdning
       const timeout = setTimeout(() => {
         setDownloadTimeout(null);
       }, 20000);
@@ -86,7 +78,6 @@ export default function Home() {
     }
   }, [imageURL]);
 
-  // Generate QR code when imageURL changes
   useEffect(() => {
     if (imageURL && qrVisible) {
       QRCode.toDataURL(imageURL, { width: 100, margin: 2 })
@@ -95,23 +86,18 @@ export default function Home() {
     }
   }, [imageURL, qrVisible]);
 
-  // Funktion för att radera den senaste bilden
   const deleteLastImage = async () => {
-    if (photos.length === 0) return; // Kontrollera att en bild finns
+    if (photos.length === 0) return;
 
-    // Avbryt nedladdning
     if (downloadTimeout) {
       clearTimeout(downloadTimeout);
       setDownloadTimeout(null);
     }
 
-    // Hämta den senaste bilden
     const lastPhoto = photos[photos.length - 1];
-    console.log(`Deleting file: ${lastPhoto.fileName}`); // Add logging
+    console.log(`Deleting file: ${lastPhoto.fileName}`);
 
-    // Ta bort bilden från servern
     try {
-      // URL encode fileName to handle paths with forward slashes
       const encodedFileName = encodeURIComponent(lastPhoto.fileName);
       await axios.delete(`/api/delete/${encodedFileName}`);
       console.log('Deleted file:', lastPhoto.fileName);
@@ -119,12 +105,11 @@ export default function Home() {
       console.error('Fel vid radering av bild:', error);
     }
 
-    // Uppdatera lokalt
-    const updatedPhotos = photos.slice(0, -1); // Ta bort sista bilden från listan
+    const updatedPhotos = photos.slice(0, -1);
     setPhotos(updatedPhotos);
-    setImageURL(null); // Återställ senaste bildens URL
+    setImageURL(null);
     setQrVisible(false);
-    setIsCameraVisible(true); // Återgå till kameran direkt efter raderingen
+    setIsCameraVisible(true);
   };
 
   const saveImageToServer = async () => {
@@ -140,7 +125,6 @@ export default function Home() {
           },
         });
 
-        // Update the photo URL with the server URL
         const updatedPhotos = photos.map(photo => 
           photo === lastPhoto ? { ...photo, url: response.data.url, fileName: response.data.fileName } : photo
         );
@@ -221,7 +205,6 @@ export default function Home() {
               )}
             </div>
 
-          {/* Settings Button */}
           <div className="absolute bottom-4 right-4">
             <button
               onClick={() => setShowSettings(!showSettings)}
@@ -235,7 +218,6 @@ export default function Home() {
               Settings
             </button>
           </div>
-          {/* Settings Panel */}
           {showSettings && (
             <div className="absolute bottom-16 right-4 bg-white p-4 rounded-lg shadow-xl border min-w-64 md:min-w-72">
               <h3 className="text-lg font-semibold mb-4 text-gray-800">Settings</h3>

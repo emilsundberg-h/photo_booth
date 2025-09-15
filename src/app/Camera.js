@@ -2,7 +2,7 @@
 
 import React, { useRef } from 'react';
 import Webcam from 'react-webcam';
-import axios from 'axios'; // Import axios
+import axios from 'axios';
 
 const Camera = ({ setImageURL, setQrVisible, photos, setPhotos, shutterColor, showShutterIcon }) => {
   const webcamRef = useRef(null);
@@ -12,12 +12,10 @@ const Camera = ({ setImageURL, setQrVisible, photos, setPhotos, shutterColor, sh
     console.log('Captured image:', imageSrc);
 
     try {
-      // Konvertera till blob
       const blob = await (await fetch(imageSrc)).blob();
       const file = new File([blob], `photo-${Date.now()}.jpg`, { type: 'image/jpeg' });
       console.log('Created file:', file);
 
-      // Spara bilden i en mapp i repot
       const formData = new FormData();
       formData.append('file', file);
 
@@ -28,13 +26,12 @@ const Camera = ({ setImageURL, setQrVisible, photos, setPhotos, shutterColor, sh
       });
 
       const url = response.data.url;
-      const fileName = response.data.fileName; // Get the file name from the response
+      const fileName = response.data.fileName;
       console.log('Uploaded file URL:', url);
       console.log('Uploaded file name:', fileName);
       setImageURL(url);
       setQrVisible(true);
 
-      // Uppdatera photos array
       const updatedPhotos = [...photos, { url, fileName }];
       setPhotos(updatedPhotos);
       console.log('Updated photos:', updatedPhotos);
@@ -50,6 +47,7 @@ const Camera = ({ setImageURL, setQrVisible, photos, setPhotos, shutterColor, sh
         ref={webcamRef}
         screenshotFormat="image/jpeg"
         className="w-full max-w-[600px] mx-auto"
+        style={{ transform: 'scaleX(-1)' }}
       />
       <button
         onClick={capture}
