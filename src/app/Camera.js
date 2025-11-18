@@ -7,6 +7,12 @@ import axios from 'axios';
 const Camera = ({ setImageURL, setQrVisible, photos, setPhotos, shutterColor, showShutterIcon }) => {
   const webcamRef = useRef(null);
 
+  const videoConstraints = {
+    width: { ideal: 1920 },
+    height: { ideal: 1080 },
+    facingMode: 'user'
+  };
+
   const capture = async () => {
     const imageSrc = webcamRef.current.getScreenshot();
     console.log('Captured image:', imageSrc);
@@ -30,9 +36,9 @@ const Camera = ({ setImageURL, setQrVisible, photos, setPhotos, shutterColor, sh
       ctx.scale(-1, 1);
       ctx.drawImage(img, -canvas.width, 0, canvas.width, canvas.height);
       
-      // Convert canvas to blob
+      // Convert canvas to blob with maximum quality
       const blob = await new Promise((resolve) => {
-        canvas.toBlob(resolve, 'image/jpeg', 0.95);
+        canvas.toBlob(resolve, 'image/jpeg', 1.0);
       });
       
       const file = new File([blob], `photo-${Date.now()}.jpg`, { type: 'image/jpeg' });
@@ -68,6 +74,8 @@ const Camera = ({ setImageURL, setQrVisible, photos, setPhotos, shutterColor, sh
         audio={false}
         ref={webcamRef}
         screenshotFormat="image/jpeg"
+        screenshotQuality={1}
+        videoConstraints={videoConstraints}
         className="w-full max-w-[600px] mx-auto"
         style={{ transform: 'scaleX(-1)' }}
       />

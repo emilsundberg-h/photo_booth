@@ -24,13 +24,13 @@ export async function POST(request) {
     const base64Data = buffer.toString('base64')
     const dataURI = `data:${file.type};base64,${base64Data}`
 
-    // Upload to Cloudinary
+    // Upload to Cloudinary with high quality settings
     const result = await cloudinary.uploader.upload(dataURI, {
       folder: 'photo-booth', // Organize uploads in a folder
       public_id: `photo-${Date.now()}`, // Unique filename
       resource_type: 'image',
       format: 'jpg', // Convert all images to JPG for consistency
-      quality: 'auto', // Auto-optimize quality
+      quality: 95, // High quality (90-95 is best for photos)
       fetch_format: 'auto', // Auto-optimize format for browsers
     })
 
