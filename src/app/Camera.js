@@ -12,7 +12,29 @@ const Camera = ({ setImageURL, setQrVisible, photos, setPhotos, shutterColor, sh
     console.log('Captured image:', imageSrc);
 
     try {
-      const blob = await (await fetch(imageSrc)).blob();
+      // Create an image element to flip the captured photo
+      const img = new Image();
+      img.src = imageSrc;
+      
+      await new Promise((resolve) => {
+        img.onload = resolve;
+      });
+
+      // Create a canvas to flip the image horizontally
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      
+      // Flip the image horizontally
+      ctx.scale(-1, 1);
+      ctx.drawImage(img, -canvas.width, 0, canvas.width, canvas.height);
+      
+      // Convert canvas to blob
+      const blob = await new Promise((resolve) => {
+        canvas.toBlob(resolve, 'image/jpeg', 0.95);
+      });
+      
       const file = new File([blob], `photo-${Date.now()}.jpg`, { type: 'image/jpeg' });
       console.log('Created file:', file);
 
