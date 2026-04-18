@@ -165,7 +165,7 @@ export default function Home() {
               type="text"
               value={greetingText}
               onChange={(e) => setGreetingText(e.target.value)}
-              className="text-lg md:text-2xl text-center bg-transparent border-none outline-none max-w-xs md:max-w-md"
+              className="text-3xl md:text-5xl text-center bg-transparent border-none outline-none w-full font-semibold"
               style={{ color: greetingTextColor }}
             />
             <div className="flex-1 flex justify-end">
@@ -178,7 +178,7 @@ export default function Home() {
               {isCameraVisible ? (
                 <Camera setImageURL={setImageURL} setQrVisible={setQrVisible} photos={photos} setPhotos={setPhotos} shutterColor={shutterColor} showShutterIcon={showShutterIcon} />
               ) : (
-                <div className="text-center max-w-md mx-auto">
+                <div className="text-center max-w-3xl mx-auto">
                   <img src={imageURL} alt="Tagen bild" className="w-full rounded-lg shadow-lg mb-4" />
                   {qrVisible && qrCodeDataURL && (
                     <div className="mb-4">
@@ -196,7 +196,7 @@ export default function Home() {
                       color: contrastColorDeletebutton
                     }}
                   >
-                    Radera bilden
+                    New Shot!
                   </button>
                   <div className="text-sm md:text-base" style={{ color: contrastColor }}>
                     Återgår till kameran om {countdown} sekunder

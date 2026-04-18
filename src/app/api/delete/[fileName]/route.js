@@ -10,7 +10,7 @@ cloudinary.config({
 
 export async function DELETE(request, { params }) {
   try {
-    const { fileName } = params
+    const { fileName } = await params
     
     console.log(`Attempting to delete Cloudinary asset: ${fileName}`)
     
