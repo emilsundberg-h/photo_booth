@@ -41,16 +41,6 @@ const Camera = ({ setImageURL, setQrVisible, photos, setPhotos, shutterColor, sh
         canvas.toBlob(resolve, 'image/jpeg', 1.0);
       });
 
-      // Trigger automatic download immediately while still in user gesture context
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = `photo-booth-${Date.now()}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-
       const file = new File([blob], `photo-${Date.now()}.jpg`, { type: 'image/jpeg' });
       console.log('Created file:', file);
 
