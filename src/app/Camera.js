@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import axios from 'axios';
 
 const Camera = ({ setImageURL, setQrVisible, photos, setPhotos, shutterColor, showShutterIcon }) => {
   const webcamRef = useRef(null);
+  const [isCapturing, setIsCapturing] = useState(false);
 
   const videoConstraints = {
     width: { ideal: 1920 },
@@ -14,6 +15,8 @@ const Camera = ({ setImageURL, setQrVisible, photos, setPhotos, shutterColor, sh
   };
 
   const capture = async () => {
+    if (isCapturing) return;
+    setIsCapturing(true);
     const imageSrc = webcamRef.current.getScreenshot();
     console.log('Captured image:', imageSrc);
 
@@ -62,9 +65,10 @@ const Camera = ({ setImageURL, setQrVisible, photos, setPhotos, shutterColor, sh
 
       const updatedPhotos = [...photos, { url, fileName }];
       setPhotos(updatedPhotos);
-      console.log('Updated photos:', updatedPhotos);
     } catch (error) {
       console.error('Fel vid uppladdning av bild:', error);
+    } finally {
+      setIsCapturing(false);
     }
   };
 
@@ -81,10 +85,16 @@ const Camera = ({ setImageURL, setQrVisible, photos, setPhotos, shutterColor, sh
       />
       <button
         onClick={capture}
-        className="mt-5 text-white rounded-full w-20 h-20 border-none text-lg cursor-pointer self-center"
-        style={{ backgroundColor: shutterColor }}
+        disabled={isCapturing}
+        className="mt-5 text-white rounded-full w-20 h-20 border-none text-lg cursor-pointer self-center flex items-center justify-center transition-opacity"
+        style={{ backgroundColor: shutterColor, opacity: isCapturing ? 0.7 : 1 }}
       >
-        {showShutterIcon ? '📸' : ''}
+        {isCapturing ? (
+          <svg className="animate-spin w-8 h-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+          </svg>
+        ) : (showShutterIcon ? '📸' : '')}
       </button>
     </div>
   );

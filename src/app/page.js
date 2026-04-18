@@ -86,30 +86,29 @@ export default function Home() {
     }
   }, [imageURL, qrVisible]);
 
-  const deleteLastImage = async () => {
-    if (photos.length === 0) return;
-
+  const resetToCamera = () => {
     if (downloadTimeout) {
       clearTimeout(downloadTimeout);
       setDownloadTimeout(null);
     }
+    setImageURL(null);
+    setQrVisible(false);
+    setIsCameraVisible(true);
+  };
+
+  const deleteLastImage = async () => {
+    if (photos.length === 0) return;
 
     const lastPhoto = photos[photos.length - 1];
-    console.log(`Deleting file: ${lastPhoto.fileName}`);
-
     try {
       const encodedFileName = encodeURIComponent(lastPhoto.fileName);
       await axios.delete(`/api/delete/${encodedFileName}`);
-      console.log('Deleted file:', lastPhoto.fileName);
     } catch (error) {
       console.error('Fel vid radering av bild:', error);
     }
 
-    const updatedPhotos = photos.slice(0, -1);
-    setPhotos(updatedPhotos);
-    setImageURL(null);
-    setQrVisible(false);
-    setIsCameraVisible(true);
+    setPhotos(photos.slice(0, -1));
+    resetToCamera();
   };
 
   const saveImageToServer = async () => {
@@ -188,16 +187,24 @@ export default function Home() {
                       </p>
                     </div>
                   )}
-                  <button
-                    onClick={deleteLastImage}
-                    className="mb-4 h-10 px-4 border-none rounded font-semibold text-sm hover:opacity-90 transition-opacity"
-                    style={{
-                      backgroundColor: deleteButtonColor,
-                      color: contrastColorDeletebutton
-                    }}
-                  >
-                    New Shot!
-                  </button>
+                  <div className="flex gap-3 justify-center mb-4">
+                    <button
+                      onClick={resetToCamera}
+                      className="h-10 px-5 border-none rounded font-semibold text-sm hover:opacity-90 transition-opacity bg-gray-800 text-white"
+                    >
+                      New Shot!
+                    </button>
+                    <button
+                      onClick={deleteLastImage}
+                      className="h-10 px-5 border-none rounded font-semibold text-sm hover:opacity-90 transition-opacity"
+                      style={{
+                        backgroundColor: deleteButtonColor,
+                        color: contrastColorDeletebutton
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
                   <div className="text-sm md:text-base" style={{ color: contrastColor }}>
                     Återgår till kameran om {countdown} sekunder
                   </div>
