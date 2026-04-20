@@ -33,6 +33,7 @@ export default function Home() {
   const [greetingTextColor, setGreetingTextColor] = useState('#000000');
   const [deleteButtonTextColor, setDeleteButtonTextColor] = useState('#ffffff');
   const [showShutterIcon, setShowShutterIcon] = useState(true);
+  const [captureDelay, setCaptureDelay] = useState(3);
   const [showSettings, setShowSettings] = useState(false);
   const [qrCodeDataURL, setQrCodeDataURL] = useState('');
 
@@ -175,7 +176,7 @@ export default function Home() {
           {/* Main Content */}
           <div className="flex-1 flex items-center justify-center px-4">
               {isCameraVisible ? (
-                <Camera setImageURL={setImageURL} setQrVisible={setQrVisible} photos={photos} setPhotos={setPhotos} shutterColor={shutterColor} showShutterIcon={showShutterIcon} />
+                <Camera setImageURL={setImageURL} setQrVisible={setQrVisible} photos={photos} setPhotos={setPhotos} shutterColor={shutterColor} showShutterIcon={showShutterIcon} captureDelay={captureDelay} />
               ) : (
                 <div className="text-center max-w-3xl mx-auto">
                   <img src={imageURL} alt="Tagen bild" className="w-full rounded-lg shadow-lg mb-4" />
@@ -272,6 +273,24 @@ export default function Home() {
                     onChange={(e) => setGreetingTextColor(e.target.value)}
                     className="w-full h-10 rounded border"
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Countdown before shot:
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      value={captureDelay}
+                      onChange={(e) => setCaptureDelay(Number(e.target.value))}
+                      className="w-full"
+                    />
+                    <span className="w-12 text-right text-sm font-semibold text-gray-700">
+                      {captureDelay}s
+                    </span>
+                  </div>
                 </div>
                 <div className="flex items-center">
                   <input

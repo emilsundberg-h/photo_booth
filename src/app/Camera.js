@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import axios from 'axios';
 
-const Camera = ({ setImageURL, setQrVisible, photos, setPhotos, shutterColor, showShutterIcon }) => {
+const Camera = ({ setImageURL, setQrVisible, photos, setPhotos, shutterColor, showShutterIcon, captureDelay }) => {
   const webcamRef = useRef(null);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [countdown, setCountdown] = useState(null);
+  const [flash, setFlash] = useState(false);
 
   const videoConstraints = {
     width: { ideal: 1920 },
@@ -16,7 +18,11 @@ const Camera = ({ setImageURL, setQrVisible, photos, setPhotos, shutterColor, sh
 
   const capture = async () => {
     if (isCapturing) return;
+    setCountdown(null);
     setIsCapturing(true);
+    setFlash(true);
+    window.setTimeout(() => setFlash(false), 150);
+
     const imageSrc = webcamRef.current.getScreenshot();
     console.log('Captured image:', imageSrc);
 
@@ -72,9 +78,29 @@ const Camera = ({ setImageURL, setQrVisible, photos, setPhotos, shutterColor, sh
     }
   };
 
+  useEffect(() => {
+    if (countdown === null) return;
+    if (countdown === 0) {
+      capture();
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setCountdown((prev) => (prev !== null ? prev - 1 : null));
+    }, 1000);
+
+    return () => window.clearTimeout(timer);
+  }, [countdown]);
+
+  const startCountdown = () => {
+    if (isCapturing || countdown !== null) return;
+    setCountdown(captureDelay);
+  };
+
   return (
     <div className="flex flex-col">
-      <Webcam
+      <div className="relative">
+        <Webcam
         audio={false}
         ref={webcamRef}
         screenshotFormat="image/jpeg"
@@ -83,18 +109,33 @@ const Camera = ({ setImageURL, setQrVisible, photos, setPhotos, shutterColor, sh
         className="w-full max-w-[900px] mx-auto"
         style={{ transform: 'scaleX(-1)' }}
       />
+      {flash && (
+        <div className="absolute inset-0 bg-white opacity-90 pointer-events-none transition-opacity duration-150" />
+      )}
+      {countdown !== null && countdown > 0 && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="text-[clamp(4rem,12vw,8rem)] font-black text-white drop-shadow-2xl">
+            {countdown}
+          </div>
+        </div>
+      )}
+      </div>
       <button
-        onClick={capture}
-        disabled={isCapturing}
+        onClick={startCountdown}
+        disabled={isCapturing || countdown !== null}
         className="mt-5 text-white rounded-full w-20 h-20 border-none text-lg cursor-pointer self-center flex items-center justify-center transition-opacity"
-        style={{ backgroundColor: shutterColor, opacity: isCapturing ? 0.7 : 1 }}
+        style={{ backgroundColor: shutterColor, opacity: isCapturing || countdown !== null ? 0.7 : 1 }}
       >
-        {isCapturing ? (
+        {countdown !== null ? (
+          countdown
+        ) : isCapturing ? (
           <svg className="animate-spin w-8 h-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
           </svg>
-        ) : (showShutterIcon ? '📸' : '')}
+        ) : (
+          showShutterIcon ? '📸' : ''
+        )}
       </button>
     </div>
   );
